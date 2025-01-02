@@ -9,5 +9,9 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_DB: pomodoro
 
-
-# volumes:
+  cache:
+    image: redis:7.2.4-alpine
+    restart: always
+    ports:
+      - "6379:6379"
+      

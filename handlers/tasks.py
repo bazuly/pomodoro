@@ -1,9 +1,18 @@
+from dependency import (
+    get_tasks_repository,
+    get_tasks_cache_repository,
+    get_task_service
+)
+
+from repository import TaskRepository, TaskCache
+
 from fastapi import APIRouter, status, Depends
 
+from typing import Annotated
 
 from schema.task import TaskSchema
-from repository import TaskRepository
-from dependency import get_tasks_repository
+from service.task import TaskService
+
 
 router = APIRouter(prefix="/task", tags=["task"])
 
@@ -12,9 +21,10 @@ router = APIRouter(prefix="/task", tags=["task"])
     "/all",
     response_model=list[TaskSchema]
 )
-async def get_tasks(task_repository: TaskRepository = Depends(get_tasks_repository)):
-    tasks = task_repository.get_tasks()
-    return tasks
+async def get_tasks(
+    task_service: Annotated[TaskService, Depends(get_task_service)]
+):
+    return task_service.get_tasks()
 
 
 @router.post(
@@ -51,3 +61,15 @@ async def delete_task(
 ):
     task_repository.delete_task(task_id)
     return {"task deleted": f"task_id: {task_id}"}
+
+
+@router.get(
+    "/{category_name}",
+)
+async def get_task_by_category_name(
+    category_name: int,
+    task_repository: TaskRepository = Depends(get_tasks_repository)
+):
+    category_task_object = task_repository.get_task_by_category_name(
+        category_name)
+    return category_task_object
