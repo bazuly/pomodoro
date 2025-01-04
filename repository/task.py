@@ -1,7 +1,8 @@
+from models import Tasks, Categories
 from sqlalchemy import select, delete, update
 from sqlalchemy.orm import Session
-from database import Tasks, get_db_connection, Categories
 from schema.task import TaskSchema
+from typing import List
 
 
 class TaskRepository:
@@ -41,7 +42,7 @@ class TaskRepository:
             Categories, Tasks.category_id == Categories.id
         ).where(Categories.name == category_name)
         with self.db_session() as session:
-            tasks: List[tasks] = session.execute(query).scalars.all()
+            tasks: List[Tasks] = session.execute(query).scalars.all()
             session.commit()
 
     def update_task_name(self, task_id: int, name: str) -> Tasks:

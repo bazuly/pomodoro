@@ -1,8 +1,4 @@
-from dependency import (
-    get_tasks_repository,
-    get_tasks_cache_repository,
-    get_task_service
-)
+from dependency import get_tasks_repository,get_task_service
 
 from repository import TaskRepository, TaskCache
 
