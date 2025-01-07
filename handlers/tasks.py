@@ -1,12 +1,12 @@
-from dependency import get_tasks_repository,get_task_service
+from dependency import get_tasks_repository, get_task_service, get_request_user_id
+from exception import TaskNotFound
+from repository import TaskRepository
 
-from repository import TaskRepository, TaskCache
-
-from fastapi import APIRouter, status, Depends
+from fastapi import APIRouter, status, Depends, HTTPException
 
 from typing import Annotated
 
-from schema.task import TaskSchema
+from schema import TaskSchema, TaskCreateSchema
 from service.task import TaskService
 
 
@@ -28,10 +28,11 @@ async def get_tasks(
     response_model=TaskSchema
 )
 async def create_task(
-    task: TaskSchema,
-    task_repository: TaskRepository = Depends(get_tasks_repository)
+    body: TaskCreateSchema,
+    task_service: Annotated[TaskService, Depends(get_task_service)],
+    user_id: int = Depends(get_request_user_id)
 ):
-    task_repository.create_task(task)
+    task = task_service.create_task(body, user_id)
     return task
 
 
@@ -41,10 +42,21 @@ async def create_task(
 async def patch_task(
     task_id: int,
     new_task_name: str,
-    task_repository: TaskRepository = Depends(get_tasks_repository)
+    task_service: Annotated[TaskService, Depends(get_task_service)],
+    user_id: int = Depends(get_request_user_id)
 ):
-    updated_task = task_repository.update_task_name(task_id, new_task_name)
-    return updated_task
+    try:
+        updated_task = task_service.update_task_name(
+            task_id=task_id,
+            name=new_task_name,
+            user_id=user_id
+        )
+        return updated_task
+    except TaskNotFound as e:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=e.detail
+        )
 
 
 @router.delete(
@@ -53,10 +65,16 @@ async def patch_task(
 )
 async def delete_task(
     task_id: int,
-    task_repository: TaskRepository = Depends(get_tasks_repository)
+    task_service: Annotated[TaskService, Depends(get_task_service)],
+    user_id: int = Depends(get_request_user_id)
 ):
-    task_repository.delete_task(task_id)
-    return {"task deleted": f"task_id: {task_id}"}
+    try:
+        task_service.delete_task(task_id=task_id, user_id=user_id)
+    except TaskNotFound as e:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=e.detail
+        )
 
 
 @router.get(

@@ -1,7 +1,7 @@
 from pydantic_settings import BaseSettings
 
 
-# реализовать через env
+# ofc the best practice is .env
 class Settings(BaseSettings):
     DB_HOST: str = "0.0.0.0"
     DB_PORT: int = 5432
@@ -12,6 +12,8 @@ class Settings(BaseSettings):
     CACHE_HOST: str = "0.0.0.0"
     CACHE_PORT: int = 6379
     CACHE_DB: int = 0
+    JWT_SECRET_KEY: str = "secret"
+    JWT_ENCODE_ALGORITHM: str = "HS256"
 
     @property
     def db_url(self):
