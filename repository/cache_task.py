@@ -8,15 +8,16 @@ class TaskCache:
         self.redis = redis
 
     def get_tasks(self):
-        with self.redis as redis:
-            task_json = redis.lrange("tasks", 0, -1)
-            if task_json:
-                return [TaskSchema.model_validate(json.loads(task)) for task in task_json]
+        task_json_list = self.redis.lrange("tasks", 0, -1)
+        if task_json_list:
+            return [TaskSchema.model_validate(json.loads(task)) for task in task_json_list]
 
     def set_tasks(self, tasks: list[TaskSchema]):
-        task_json = [task.json() for task in tasks]
-        if task_json:
-            with self.redis as redis:
-                redis.lpush("tasks", *task_json)
+        task_json_list = [task.json() for task in tasks]
+        if task_json_list:
+            # remove old data from list
+            self.redis.delete("tasks")
+            # set new data
+            self.redis.rpush("tasks", task_json_list)
         else:
             raise ValueError("Task list is empty")

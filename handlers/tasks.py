@@ -75,15 +75,3 @@ async def delete_task(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=e.detail
         )
-
-
-@router.get(
-    "/{category_name}",
-)
-async def get_task_by_category_name(
-    category_name: int,
-    task_repository: TaskRepository = Depends(get_tasks_repository)
-):
-    category_task_object = task_repository.get_task_by_category_name(
-        category_name)
-    return category_task_object
