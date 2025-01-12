@@ -1,20 +1,35 @@
 from pydantic_settings import BaseSettings
 
 
-# ofc the best practice is .env
 class Settings(BaseSettings):
-    DB_HOST: str = "0.0.0.0"
-    DB_PORT: int = 5432
-    DB_USER: str = "postgres"
-    DB_PASSWORD: str = "password"
-    DB_DRIVER: str = "postgresql+psycopg2"
-    DB_NAME: str = "pomodoro"
-    CACHE_HOST: str = "0.0.0.0"
-    CACHE_PORT: int = 6379
-    CACHE_DB: int = 0
-    JWT_SECRET_KEY: str = "secret"
-    JWT_ENCODE_ALGORITHM: str = "HS256"
+    DB_HOST: str
+    DB_PORT: int
+    DB_USER: str
+    DB_PASSWORD: str
+    DB_DRIVER: str
+    DB_NAME: str
+    CACHE_HOST: str
+    CACHE_PORT: int
+    CACHE_DB: int
+    JWT_SECRET_KEY: str
+    JWT_ENCODE_ALGORITHM: str
+    GOOGLE_CLIENT_ID: str
+    GOOGLE_SECRET_KEY: str
+    GOOGLE_REDIRECT_URI: str
+    GOOGLE_TOKEN_URL: str
+
+    class Config:
+        env_file = ".env"
 
     @property
     def db_url(self):
         return f"{self.DB_DRIVER}://{self.DB_USER}:{self.DB_PASSWORD}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
+
+    @property
+    def google_redirect_url(self) -> str:
+        return (
+            f"https://accounts.google.com/o/oauth2/auth?"
+            f"response_type=code&client_id={self.GOOGLE_CLIENT_ID}&"
+            f"redirect_uri={self.GOOGLE_REDIRECT_URI}&"
+            f"scope=openid%20profile%20email&access_type=offline"
+        )
