@@ -35,7 +35,7 @@ class UserRepository:
             user = session.execute(query).scalar_one_or_none()
             return user
 
-    def get_user_by_gmail(self, email: str) -> UserProfile | None:
+    def get_user_by_mail(self, email: str) -> UserProfile | None:
         query = select(UserProfile).where(
             UserProfile.email == email)
         with self.db_session() as session:

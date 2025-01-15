@@ -8,10 +8,19 @@ services:
       POSTGRES_PASSWORD: password
       POSTGRES_USER: postgres
       POSTGRES_DB: pomodoro
+    volumes:
+      - db_data:/var/lib/postgresql/data
 
   cache:
     image: redis:7.2.4-alpine
     restart: always
     ports:
       - "6379:6379"
+    volumes:
+      - cache_data:/data
       
+volumes:
+  db_data:
+    driver: local
+  cache_data:
+    driver: local
