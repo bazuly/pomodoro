@@ -1,4 +1,4 @@
-from client import GoogleClient
+from client import GoogleClient, YandexClient
 from dataclasses import dataclass
 import datetime
 from datetime import timedelta
@@ -23,6 +23,7 @@ class AuthService:
     user_repository: UserRepository
     settings: Settings
     google_client: GoogleClient
+    yandex_client: YandexClient
 
     def login(self, username: str, password: str) -> UserLoginSchema:
         user = self.user_repository.get_user_by_username(username)
@@ -34,9 +35,13 @@ class AuthService:
             access_token=access_token
         )
 
+    """
+    Google auth/redirect methods
+    """
+
     def google_auth(self, code: str) -> None:
         google_user_data = self.google_client.get_user_info(code=code)
-        if user := self.user_repository.get_user_by_gmail(email=google_user_data.email):
+        if user := self.user_repository.get_user_by_mail(email=google_user_data.email):
             access_token = self.generate_access_token(user_id=user.id)
             return UserLoginSchema(
                 user_id=created_user.id,
@@ -62,6 +67,39 @@ class AuthService:
 
     def get_google_redirect_url(self) -> str:
         return self.settings.google_redirect_url
+
+    """
+    Yandex auth/redirect methods
+    """
+
+    def yandex_auth(self, code: str) -> None:
+        yandex_user_data = self.yandex_client.get_user_info(code=code)
+        if user := self.user_repository.get_user_by_mail(email=yandex_user_data.default_email):
+            access_token = self.generate_access_token(user_id=user.id)
+            return UserLoginSchema(
+                user_id=created_user.id,
+                access_token=access_token
+            )
+        print(yandex_user_data)
+        create_user_data = UserCreateSchema(
+            yandex_access_token=yandex_user_data.access_token,
+            # email and name will be Null in our BD
+            # if we login as a yandex user
+            email=yandex_user_data.default_email,
+            name=yandex_user_data.name
+        )
+        # no need to keep yandex access token in BD
+        # at least in our case
+        created_user = self.user_repository.create_user(create_user_data)
+        access_token = self.generate_access_token(user_id=created_user.id)
+        print(created_user)
+        return UserLoginSchema(
+            user_id=created_user.id,
+            access_token=access_token
+        )
+
+    def get_yandex_redirect_url(self) -> str:
+        return self.settings.yandex_redirect_url
 
     @staticmethod
     def _validate_auth_user(user: UserProfile, password: str):

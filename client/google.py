@@ -24,5 +24,4 @@ class GoogleClient:
             "grant_type": "authorization_code",
         }
         response = requests.post(self.settings.GOOGLE_TOKEN_URL, data=data)
-        # print(response.json())
         return response.json()['access_token']
