@@ -1,25 +1,33 @@
 from dataclasses import dataclass
 from schema import YandexUserData
-import requests
+import httpx
 from settings import Settings
 
 
 @dataclass
 class YandexClient:
     settings: Settings
+    async_client: httpx.AsyncClient
 
-    def get_user_info(self, code: str) -> YandexUserData:
-        access_token = self._get_user_access_token(code=code)
-        user_info = requests.get(
+    async def get_user_info(self, code: str) -> YandexUserData:
+        access_token = await self._get_user_access_token(code=code)
+        response = await self.async_client.get(
             "https://login.yandex.ru/info?format=json",
             headers={"Authorization": f"OAuth {access_token}"}
         )
-        print(user_info.json())
-        return YandexUserData(**user_info.json(), access_token=access_token)
+
+        data = response.json()
+        if "error" in data:
+            raise ValueError(
+                f"Error fetching user info: {
+                data['error']} - {data.get('error_description')}"
+            )
+        return YandexUserData(**data, access_token=access_token)
 
     # receive yandex access token
-    def _get_user_access_token(self, code: str) -> str:
-        response = requests.post(
+    async def _get_user_access_token(self, code: str) -> str:
+        # async with self.async_client as client:
+        response = await self.async_client.post(
             self.settings.YANDEX_TOKEN_URL,
             data={
                 "grant_type": "authorization_code",

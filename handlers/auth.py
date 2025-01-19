@@ -18,7 +18,7 @@ async def login(
     auth_service: Annotated[AuthService, Depends(get_auth_service)]
 ):
     try:
-        return auth_service.login(
+        return await auth_service.login(
             username=body.username,
             password=body.password
         )
@@ -33,10 +33,10 @@ async def login(
             detail=e.detail
         )
 
-    """
-    Google auth/login endpoints
+"""
+Google auth/login handlers
 
-    """
+"""
 
 
 @router.get(
@@ -58,11 +58,11 @@ async def google_auth(
     auth_service: Annotated[AuthService, Depends(get_auth_service)],
     code: str
 ):
-    return auth_service.google_auth(code=code)
+    return await auth_service.google_auth(code=code)
 
-    """
-    Yandex auth/login endpoints
-    """
+"""
+Yandex auth/login handlers
+"""
 
 
 @router.get(
@@ -84,4 +84,4 @@ async def yandex_auth(
     auth_service: Annotated[AuthService, Depends(get_auth_service)],
     code: str
 ):
-    return auth_service.yandex_auth(code=code)
+    return await auth_service.yandex_auth(code=code)
