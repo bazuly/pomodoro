@@ -24,9 +24,7 @@ class YandexClient:
             )
         return YandexUserData(**data, access_token=access_token)
 
-    # receive yandex access token
     async def _get_user_access_token(self, code: str) -> str:
-        # async with self.async_client as client:
         response = await self.async_client.post(
             self.settings.YANDEX_TOKEN_URL,
             data={

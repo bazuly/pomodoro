@@ -36,34 +36,47 @@ class AuthService:
         )
 
     """
-    Google auth/redirect methods
+    Oauth email auth. Yandex and Google
     """
 
-    async def google_auth(self, code: str) -> UserLoginSchema:
-        google_user_data = await self.google_client.get_user_info(code=code)
-        if user := await self.user_repository.get_user_by_mail(email=google_user_data.email):
+    async def auth_with_oauth(self, code: str, provider: str) -> UserLoginSchema:
+        if provider == "google":
+            user_data = await self.google_client.get_user_info(code=code)
+            email = user_data.email
+            access_token = user_data.access_token
+        elif provider == "yandex":
+            user_data = await self.yandex_client.get_user_info(code=code)
+            email = user_data.default_email
+            access_token = user_data.access_token
+        else:
+            raise ValueError(f"Unsupported provider: {provider}")
+
+        if user := await self.user_repository.get_user_by_mail(email=email):
             access_token = self.generate_access_token(user_id=user.id)
             return UserLoginSchema(
                 user_id=user.id,
                 access_token=access_token
             )
-        print(google_user_data)
+
         create_user_data = UserCreateSchema(
-            google_access_token=google_user_data.access_token,
-            # email and name will be Null in our BD
-            # if we login as a google user
-            email=google_user_data.email,
-            name=google_user_data.name
+            email=email,
+            name=user_data.name,
+            **{f"{provider}_access_token": access_token}
         )
-        # no need to keep google access token in BD
-        # at least in our case
         created_user = await self.user_repository.create_user(create_user_data)
         access_token = self.generate_access_token(user_id=created_user.id)
-        print(created_user)
+
         return UserLoginSchema(
             user_id=created_user.id,
             access_token=access_token
         )
+
+    """
+    Google auth/redirect methods
+    """
+
+    async def google_auth(self, code: str) -> UserLoginSchema:
+        return await self.auth_with_oauth(code=code, provider='google')
 
     def get_google_redirect_url(self) -> str:
         return self.settings.google_redirect_url
@@ -73,32 +86,7 @@ class AuthService:
     """
 
     async def yandex_auth(self, code: str) -> UserLoginSchema:
-        yandex_user_data = await self.yandex_client.get_user_info(code=code)
-        if user := await self.user_repository.get_user_by_mail(email=yandex_user_data.default_email):
-            access_token = self.generate_access_token(user_id=user.id)
-            return UserLoginSchema(
-                user_id=user.id,
-                access_token=access_token
-            )
-        print(yandex_user_data)
-        create_user_data = UserCreateSchema(
-            yandex_access_token=yandex_user_data.access_token,
-            # email and name will be Null in our BD
-            # if we login as a yandex user
-            email=yandex_user_data.default_email,
-            name=yandex_user_data.name
-        )
-        # no need to keep yandex access token in BD
-        # at least in our case
-        created_user = await self.user_repository.create_user(create_user_data)
-        access_token = self.generate_access_token(user_id=created_user.id)
-
-        print(created_user)
-
-        return UserLoginSchema(
-            user_id=created_user.id,
-            access_token=access_token
-        )
+        return await self.auth_with_oauth(code=code, provider='yandex')
 
     def get_yandex_redirect_url(self) -> str:
         return self.settings.yandex_redirect_url
