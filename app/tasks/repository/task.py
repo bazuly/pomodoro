@@ -3,8 +3,8 @@ from typing import List
 from sqlalchemy import select, delete, update, insert
 from sqlalchemy.orm import Session
 
-from app.models import Tasks, Categories
-from app.schema.task import TaskCreateSchema
+from app.tasks.models import Tasks, Categories
+from app.tasks.schema import TaskCreateSchema
 
 
 class TaskRepository:

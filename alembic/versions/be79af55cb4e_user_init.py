@@ -1,4 +1,4 @@
-"""user-init
+"""users-init
 
 Revision ID: be79af55cb4e
 Revises: 6dc1484ceb14

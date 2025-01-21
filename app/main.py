@@ -1,13 +1,11 @@
 from fastapi import FastAPI
 
-from app.handlers.user import router as user_router
-from app.handlers.ping import router as ping_router
-from app.handlers.auth import router as auth_router
-from app.handlers.tasks import router as task_router
+from app.tasks.handlers import router as task_router
+from app.users.auth.handlers import router as auth_router
+from app.users.user_profile.handlers import router as user_profile_router
 
 app = FastAPI()
 
 app.include_router(auth_router)
-app.include_router(user_router)
-app.include_router(ping_router)
+app.include_router(user_profile_router)
 app.include_router(task_router)

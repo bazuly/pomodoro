@@ -3,8 +3,8 @@ from dataclasses import dataclass
 from sqlalchemy import insert, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.schema import UserCreateSchema
-from app.models import UserProfile
+from app.users.user_profile.models import UserProfile
+from app.users.user_profile.schema import UserCreateSchema
 
 
 @dataclass
@@ -23,7 +23,7 @@ class UserRepository:
     async def get_user(self, user_id: int) -> UserProfile | None:
         query = select(UserProfile).where(UserProfile.id == user_id)
         async with self.db_session as session:
-            # with scalar_one_or_none we are return user object
+            # with scalar_one_or_none we are return users object
             # or none if user_id doesn't exist
             user = (await session.execute(query)).scalar_one_or_none()
             return user
