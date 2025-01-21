@@ -5,15 +5,17 @@ from datetime import timedelta
 from jose import jwt
 from jose.exceptions import JWTError
 
-from app.client import GoogleClient, YandexClient
+from app.users.auth.client import GoogleClient, YandexClient
 from app.exception import (
     TokenNotCorrect,
     UserNotCorrectPasswordException,
     UserNotFoundException,
 )
-from app.models.user import UserProfile
-from app.repository import UserRepository
-from app.schema import UserCreateSchema, UserLoginSchema
+from app.users.auth.schema import UserLoginSchema
+from app.users.user_profile.models import UserProfile
+from app.users.user_profile.repository import UserRepository
+from app.users.user_profile.schema import UserCreateSchema
+
 from settings import Settings
 
 
