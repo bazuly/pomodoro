@@ -42,6 +42,6 @@ class Settings(BaseSettings):
     def yandex_redirect_url(self) -> str:
         return (
             f"https://oauth.yandex.ru/authorize?response_type=code&client_id={
-                self.YANDEX_CLIENT_ID}&"
+            self.YANDEX_CLIENT_ID}&"
             f"redirect_uri={self.YANDEX_REDIRECT_URL}"
         )
