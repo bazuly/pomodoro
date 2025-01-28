@@ -21,6 +21,8 @@ class Settings(BaseSettings):
     YANDEX_SECRET_KEY: str
     YANDEX_REDIRECT_URL: str
     YANDEX_TOKEN_URL: str
+    CELERY_REDIS_URL: str
+    AMQP_URL: str
 
     class Config:
         env_file = ".env"
