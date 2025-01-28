@@ -9,10 +9,15 @@ from app.infrastructure.cache.accessor import get_redis_connection
 from .exception import TokenExpired, TokenNotCorrect
 from .tasks.repository import TaskRepository, TaskCache
 from .tasks.service import TaskService
+from .users.auth.client.mail import MailClient
 from .users.auth.service import AuthService
 from .users.user_profile.repository import UserRepository
 from .users.user_profile.service import UserService
 from settings import Settings
+
+
+async def get_mail_client() -> MailClient:
+    return MailClient(settings=Settings())
 
 
 async def get_tasks_repository(db_session: AsyncSession = Depends(get_db_connection)) -> TaskRepository:
@@ -57,14 +62,16 @@ async def get_yandex_client(async_client: httpx.AsyncClient = Depends(get_async_
 async def get_auth_service(
         user_repository: UserRepository = Depends(get_user_repository),
         google_client: GoogleClient = Depends(get_google_client),
-        yandex_client: YandexClient = Depends(get_yandex_client)
+        yandex_client: YandexClient = Depends(get_yandex_client),
+        mail_client: MailClient = Depends(get_mail_client)
 
 ) -> AuthService:
     return AuthService(
         user_repository=user_repository,
         settings=Settings(),
         google_client=google_client,
-        yandex_client=yandex_client
+        yandex_client=yandex_client,
+        mail_client=mail_client
 
     )
 

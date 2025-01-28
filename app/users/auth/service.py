@@ -11,6 +11,7 @@ from app.exception import (
     UserNotCorrectPasswordException,
     UserNotFoundException,
 )
+from app.users.auth.client.mail import MailClient
 from app.users.auth.schema import UserLoginSchema
 from app.users.user_profile.models import UserProfile
 from app.users.user_profile.repository import UserRepository
@@ -25,6 +26,7 @@ class AuthService:
     settings: Settings
     google_client: GoogleClient
     yandex_client: YandexClient
+    mail_client: MailClient
 
     async def login(self, username: str, password: str) -> UserLoginSchema:
         user = await self.user_repository.get_user_by_username(username)
@@ -45,10 +47,12 @@ class AuthService:
             user_data = await self.google_client.get_user_info(code=code)
             email = user_data.email
             access_token = user_data.access_token
+            await self.mail_client.send_welcome_email(to=user_data.email)
         elif provider == "yandex":
             user_data = await self.yandex_client.get_user_info(code=code)
             email = user_data.default_email
             access_token = user_data.access_token
+            await self.mail_client.send_welcome_email(to=user_data.default_email)
         else:
             raise ValueError(f"Unsupported provider: {provider}")
 

@@ -1,0 +1,2 @@
+class BrokerProducer:
+    pass
